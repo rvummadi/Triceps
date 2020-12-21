@@ -1,0 +1,121 @@
+
+--DECALRE
+  --v_sqlerrm    varchar2(4000);
+  --c_limit PLS_INTEGER := 100;
+
+BEGIN  
+  MERGE INTO TRICEPS_PR_UPLD21_UPLOAD T
+	USING (SELECT * FROM AWI_UPLD_STG	WHERE process_status = 'N' and upld_record_type = 'PR') S
+  	ON (  T.UPLD_FACILITY = S.UPLD_FACILITY
+	     AND T.UPLD_WAREHOUSE = S.UPLD_WAREHOUSE 
+	     AND T.UPLD_RECORD_TYPE = S.UPLD_RECORD_TYPE
+	     AND T.UPLD21_PO_NUMBER = SUBSTR(S.UPLD_RECORD_DATA, 1, 8)
+	     AND T.UPLD21_RECEIPT_NUMBER = SUBSTR(S.UPLD_RECORD_DATA, 9, 9)
+	     AND T.UPLD21_ITEM_NUMBER = SUBSTR(S.UPLD_RECORD_DATA, 18, 8)
+	     AND T.UPLD21_PALLET_NUMBER =  SUBSTR(S.UPLD_RECORD_DATA, 53, 7)
+        )
+ 	WHEN MATCHED THEN UPDATE SET T.SEQ_ID = S.SEQ_ID
+              , T.UPLD_BATCH_ID = S.UPLD_BATCH_ID
+              , T.UPLD_FILENAME = S.UPLD_SRC_FILENAME
+              , T.UPLD21_QTY_ON_PALLET = SUBSTR(S.UPLD_RECORD_DATA, 26, 5)
+              , T.UPLD21_PRODUCT_WEIGHT = SUBSTR(S.UPLD_RECORD_DATA, 31, 5)||'.'|| SUBSTR(S.UPLD_RECORD_DATA, 36, 2)
+              , T.UPLD21_PARENT_FACILITY = SUBSTR(S.UPLD_RECORD_DATA, 38, 2)
+              , T.UPLD21_PARENT_WHSE = SUBSTR(S.UPLD_RECORD_DATA, 40, 2)
+              , T.UPLD21_RECEIPT_DATE = TO_DATE(SUBSTR(S.UPLD_RECORD_DATA, 42, 8), 'YYYYMMDD')
+              , T.UPLD21_PALLET_INCHES_HIGH = SUBSTR(S.UPLD_RECORD_DATA, 50, 3)
+              , T.UPLD21_SLOT_NUMBER = SUBSTR(S.UPLD_RECORD_DATA, 60, 7)
+              , T.UPLD21_CATCH_WEIGHT_FLAG = SUBSTR(S.UPLD_RECORD_DATA, 67, 1)
+              , T.UPLD21_VENDOR = SUBSTR(S.UPLD_RECORD_DATA, 68, 6)
+              , T.UPLD21_PO_LINE_ADDED_BY_WHSE = SUBSTR(S.UPLD_RECORD_DATA, 74, 1)
+              , T.UPLD21_POD_ITEM_SEQ = SUBSTR(S.UPLD_RECORD_DATA, 75, 3)
+              , T.UPLD21_RECV_INTO_SEL_OR_STG = SUBSTR(S.UPLD_RECORD_DATA, 78, 1)
+              , T.UPLD21_FROM_FW = SUBSTR(S.UPLD_RECORD_DATA, 79, 4)
+              , T.LOAD_DATE = S.LOAD_DATE
+              , T.LOAD_SOURCE = S.LOAD_SOURCE
+              , T.CREATED_BY = S.CREATED_BY
+              , T.CREATION_DATE = S.CREATION_DATE
+              , T.LAST_UPDATED_BY = S.LAST_UPDATED_BY
+              , T.LAST_UPDATED_DATE = S.LAST_UPDATED_DATE
+        WHEN NOT MATCHED THEN INSERT (SEQ_ID
+          , UPLD_BATCH_ID
+          , UPLD_FILENAME  
+          , UPLD_FACILITY        
+          , UPLD_WAREHOUSE
+          , UPLD_RECORD_TYPE
+          , UPLD21_PO_NUMBER
+          , UPLD21_RECEIPT_NUMBER
+          , UPLD21_ITEM_NUMBER
+          , UPLD21_QTY_ON_PALLET
+          , UPLD21_PRODUCT_WEIGHT
+          , UPLD21_PARENT_FACILITY
+          , UPLD21_PARENT_WHSE
+          , UPLD21_RECEIPT_DATE
+          , UPLD21_PALLET_INCHES_HIGH
+          , UPLD21_PALLET_NUMBER
+          , UPLD21_SLOT_NUMBER
+          , UPLD21_CATCH_WEIGHT_FLAG
+          , UPLD21_VENDOR
+          , UPLD21_PO_LINE_ADDED_BY_WHSE
+          , UPLD21_POD_ITEM_SEQ
+          , UPLD21_RECV_INTO_SEL_OR_STG
+          , UPLD21_FROM_FW
+          , LOAD_DATE
+          , LOAD_SOURCE
+          , CREATED_BY
+          , CREATION_DATE
+          , LAST_UPDATED_BY
+          , LAST_UPDATED_DATE
+          ) 
+          VALUES (S.SEQ_ID
+        , S.UPLD_BATCH_ID
+        , S.UPLD_SRC_FILENAME        
+        , S.UPLD_FACILITY
+        , S.UPLD_WAREHOUSE
+        , S.UPLD_RECORD_TYPE
+        , SUBSTR(S.UPLD_RECORD_DATA, 1, 8)
+        , SUBSTR(S.UPLD_RECORD_DATA, 9, 9)
+        , SUBSTR(S.UPLD_RECORD_DATA, 18, 8)
+        , SUBSTR(S.UPLD_RECORD_DATA, 26, 5)
+        , SUBSTR(S.UPLD_RECORD_DATA, 31, 5)||'.'|| SUBSTR(S.UPLD_RECORD_DATA, 36, 2)
+        , SUBSTR(S.UPLD_RECORD_DATA, 38, 2)
+        , SUBSTR(S.UPLD_RECORD_DATA, 40, 2)
+        , TO_DATE(SUBSTR(S.UPLD_RECORD_DATA, 42, 8), 'YYYYMMDD')
+        , SUBSTR(S.UPLD_RECORD_DATA, 50, 3)
+        , SUBSTR(S.UPLD_RECORD_DATA, 53, 7)
+        , SUBSTR(S.UPLD_RECORD_DATA, 60, 7)        
+        , SUBSTR(S.UPLD_RECORD_DATA, 67, 1)
+        , SUBSTR(S.UPLD_RECORD_DATA, 68, 6)
+        , SUBSTR(S.UPLD_RECORD_DATA, 74, 1)
+        , SUBSTR(S.UPLD_RECORD_DATA, 75, 3)
+        , SUBSTR(S.UPLD_RECORD_DATA, 78, 1)
+        , SUBSTR(S.UPLD_RECORD_DATA, 79, 4)        
+        , SYSDATE
+        , 'ODI Procedure'
+        , 'ODI'
+        , SYSDATE
+        , 'ODI'
+        , SYSDATE
+        );
+  UPDATE AWI_UPLD_STG set process_status = 'P' WHERE process_status = 'N' and upld_record_type = 'PR';     
+    
+EXCEPTION
+WHEN OTHERS THEN
+--v_sqlerrm := sqlerrm;
+--update cttrl_etl_job_statu set status = 'ERROR', error_message=v_sqlerrm, session_num=n_i_session_number;
+NULL;
+RAISE;
+END;
+
+
+
+
+
+
+
+
+
+
+
+
+
+

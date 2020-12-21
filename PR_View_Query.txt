@@ -1,0 +1,75 @@
+CREATE OR REPLACE VIEW TRICEPS_PR_UPLD21_UPLOAD_SUMMARY AS 
+SELECT 
+upld_record_type "Record type",
+(case when upld_filename = 'AWI_UPLD_RE.txt' then upld_facility||' - AWI Robesonia'
+when upld_filename = 'AWI_UPLD_YE.txt' then upld_facility||' - AWI York'
+when upld_filename = 'MIA_GROC_UPLOAD_MIA.txt' or upld_filename = 'MIA_FRSH_UPLOAD_MIA.txt' then upld_facility||' - Miami'
+when upld_filename = 'HAM_GROC_UPLOAD_HAM.txt' or upld_filename = 'HAM_FRSH_UPLOAD_HAM.txt' then upld_facility||' - Hammond'
+when upld_filename = 'JAX_GROC_UPLOAD_JAX.txt' or upld_filename = 'JAX_FRSH_UPLOAD_JAX.txt' then upld_facility||' - Jacksonville'
+when upld_filename = 'JAX_GMDC_UPLOAD_JXG.txt' then upld_facility||' - Jacksonville'
+when upld_filename = 'JAX_GROC_UPLOAD_JXC.txt' then upld_facility||' - Jacksonville'
+else upld_facility
+end) "Facility",
+(case when upld_filename = 'AWI_UPLD_RE.txt' and upld_warehouse = '01' then upld_warehouse||' - Grocery' 
+when upld_filename = 'AWI_UPLD_RE.txt' and upld_warehouse = '02' then upld_warehouse||' - Fresh' 
+when upld_filename = 'AWI_UPLD_RE.txt' and upld_warehouse = '03' then upld_warehouse||' - Frozen' 
+when upld_filename = 'AWI_UPLD_YE.txt' and upld_warehouse = '01' then upld_warehouse||' - GMD' 
+when upld_filename = 'MIA_GROC_UPLOAD_MIA.txt' and upld_warehouse = '02' then upld_warehouse||' - Grocery' 
+when upld_filename = 'MIA_FRSH_UPLOAD_MIA.txt' and upld_warehouse = '03' then upld_warehouse||' - Fresh/Frozen'
+when upld_filename = 'HAM_GROC_UPLOAD_HAM.txt' and upld_warehouse = '02' then upld_warehouse||' - Grocery' 
+when upld_filename = 'HAM_FRSH_UPLOAD_HAM.txt' and upld_warehouse = '03' then upld_warehouse||' - Fresh/Frozen'
+when upld_filename = 'JAX_GROC_UPLOAD_JAX.txt' and upld_warehouse = '02' then upld_warehouse||' - Grocery'
+when upld_filename = 'JAX_FRSH_UPLOAD_JAX.txt' and upld_warehouse = '03' then upld_warehouse||' - Fresh'
+when upld_filename = 'JAX_GMDC_UPLOAD_JXG.txt' and upld_warehouse = '05' then upld_warehouse||' - GMD'
+when upld_filename = 'JAX_GROC_UPLOAD_JXC.txt' and upld_warehouse = '02' then upld_warehouse||' - Consolidated'
+else upld_warehouse
+end) "Warehouse",
+upld21_po_number "PO", 
+COUNT(upld21_pallet_number) "Pallet count",
+SUM(upld21_qty_on_pallet) "Case count"
+FROM XXERP_ODI.TRICEPS_PR_UPLD21_UPLOAD
+GROUP BY upld_record_type, upld_facility, upld_warehouse, upld21_po_number, upld_filename 
+ORDER BY upld_record_type, upld_facility, upld_warehouse, upld21_po_number;
+
+-------------------------------------------------------------------------------------
+
+CREATE OR REPLACE VIEW TRICEPS_PR_UPLD21_UPLOAD_SUMMARY AS 
+SELECT 
+upld_record_type "Record type",
+(case upld_facility
+when '01' then '01 - AWI Robesonia'
+when '02' then '02 - AWI York'
+else upld_facility
+end) "Facility",
+(case when upld_facility = '01' and upld_warehouse = '01' then '01 - Grocery' 
+when upld_facility = '01' and upld_warehouse = '02' then '02 - Fresh' 
+when upld_facility = '01' and upld_warehouse = '03' then '03 - Frozen' 
+when upld_facility = '02' and upld_warehouse = '01' then '01 - GMD' 
+else upld_warehouse
+end) "Warehouse",
+upld21_po_number "PO", 
+COUNT(upld21_pallet_number) "Pallet count",
+SUM(upld21_qty_on_pallet) "Case count"
+FROM XXERP_ODI.TRICEPS_PR_UPLD21_UPLOAD
+GROUP BY upld_record_type, upld_facility, upld_warehouse, upld21_po_number  
+ORDER BY upld_record_type, upld_facility, upld_warehouse, upld21_po_number;
+
+-------------------------------------------------------------------------------------
+
+Files:
+
+AWI_UPLD_YE.txt
+AWI_UPLD_RE.txt
+HAM_GROC_UPLOAD_HAM.txt
+HAM_FRSH_UPLOAD_HAM.txt
+JAX_GROC_UPLOAD_JAX.txt
+JAX_FRSH_UPLOAD_JAX.txt
+JAX_GMDC_UPLOAD_JXG.txt
+JAX_GROC_UPLOAD_JXC.txt
+MIA_GROC_UPLOAD_MIA.txt
+MIA_FRSH_UPLOAD_MIA.txt
+
+Hammond - facility =8 , warehouse=2(Grocery) , 3
+
+-------------------------------------------------------------------------------------
+
